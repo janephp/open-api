@@ -26,20 +26,12 @@ class TagNormalizer implements DenormalizerInterface, NormalizerInterface, Denor
 
     public function supportsDenormalization($data, $type, $format = null)
     {
-        if ('Jane\\OpenApi\\Model\\Tag' !== $type) {
-            return false;
-        }
-
-        return true;
+        return $type === 'Jane\\OpenApi\\Model\\Tag';
     }
 
     public function supportsNormalization($data, $format = null)
     {
-        if ($data instanceof \Jane\OpenApi\Model\Tag) {
-            return true;
-        }
-
-        return false;
+        return $data instanceof \Jane\OpenApi\Model\Tag;
     }
 
     public function denormalize($data, $class, $format = null, array $context = [])
@@ -51,14 +43,23 @@ class TagNormalizer implements DenormalizerInterface, NormalizerInterface, Denor
             return new Reference($data->{'$ref'}, $context['document-origin']);
         }
         $object = new \Jane\OpenApi\Model\Tag();
+        $data = clone $data;
         if (property_exists($data, 'name')) {
             $object->setName($data->{'name'});
+            unset($data->{'name'});
         }
         if (property_exists($data, 'description')) {
             $object->setDescription($data->{'description'});
+            unset($data->{'description'});
         }
         if (property_exists($data, 'externalDocs')) {
             $object->setExternalDocs($this->denormalizer->denormalize($data->{'externalDocs'}, 'Jane\\OpenApi\\Model\\ExternalDocs', 'json', $context));
+            unset($data->{'externalDocs'});
+        }
+        foreach ($data as $key => $value) {
+            if (preg_match('/^x-/', $key)) {
+                $object[$key] = $value;
+            }
         }
 
         return $object;
@@ -75,6 +76,11 @@ class TagNormalizer implements DenormalizerInterface, NormalizerInterface, Denor
         }
         if (null !== $object->getExternalDocs()) {
             $data->{'externalDocs'} = $this->normalizer->normalize($object->getExternalDocs(), 'json', $context);
+        }
+        foreach ($object as $key => $value) {
+            if (preg_match('/^x-/', $key)) {
+                $data->{$key} = $value;
+            }
         }
 
         return $data;

@@ -30,6 +30,13 @@ trait ServerPluginGenerator
             if (\array_key_exists('host', $url)) {
                 $scheme = $url['scheme'] ?? 'https';
                 $baseUri = $scheme . '://' . trim($url['host'], '/');
+
+                $variables = $server->getVariables();
+
+                if ($variables['port']->getDefault()) {
+                    $baseUri .= ':' . $variables['port']->getDefault();
+                }
+
                 $plugins[] = AddHostPlugin::class;
             }
 

@@ -56,6 +56,7 @@ trait GetPluginGenerator
                     $anonymousClass['properties'][] = new Stmt\Property(Stmt\Class_::MODIFIER_PRIVATE, [new Stmt\PropertyProperty($field)]);
                     $anonymousClass['constructParameters'][] = new Param(new Expr\Variable($field), null, $type);
                     $anonymousClass['constructStatements'][] = new Stmt\Expression(new Expr\Assign(new Expr\PropertyFetch(new Expr\Variable('this'), new Scalar\String_($field)), new Expr\Variable($field)));
+                    $anonymousClass['callerParameters'][] = new Node\Arg(new Expr\PropertyFetch(new Expr\Variable('this'), new Scalar\String_($field)));
                 }
 
                 $pluginClass = new Stmt\Class_(null, [
@@ -86,10 +87,9 @@ trait GetPluginGenerator
                     ),
                 ]);
 
+
                 $stmts[] = new Stmt\Return_(new Expr\New_(new Name\FullyQualified(Plugin\AuthenticationPlugin::class), [
-                    new Node\Arg(new Expr\New_($pluginClass, [
-                        new Node\Arg(new Expr\PropertyFetch(new Expr\Variable('this'), new Scalar\String_('token'))),
-                    ])),
+                    new Node\Arg(new Expr\New_($pluginClass, $anonymousClass['callerParameters'])),
                 ]));
                 break;
             case SecuritySchemeGuess::TYPE_API_KEY:
